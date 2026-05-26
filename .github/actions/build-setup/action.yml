@@ -32,11 +32,18 @@ runs:
       if: ${{ runner.os == 'Windows' }}
       shell: pwsh
       run: |
+        $ErrorActionPreference = "Stop"
         $d = Join-Path $Env:Temp cranko-$(New-Guid)
         [void][System.IO.Directory]::CreateDirectory($d)
-        cd $d
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        iex ((New-Object System.Net.WebClient).DownloadString('https://pkgw.github.io/cranko/fetch-latest.ps1'))
+        $version = "0.17.3"
+        $arch = "x86_64-pc-windows-msvc"
+        $base = "cranko-$version-$arch.zip"
+        $archive = Join-Path $d $base
+        $url = "https://github.com/pkgw/cranko/releases/download/cranko@$version/$base"
+        Invoke-WebRequest -Uri $url -OutFile $archive
+        Expand-Archive -Path $archive -DestinationPath $d -Force
+        Remove-Item $archive -Force
+        & (Join-Path $d "cranko.exe") --version
         Add-Content -Value "PATH=${d};$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
     - name: Install release artifact
       uses: actions/download-artifact@v4
