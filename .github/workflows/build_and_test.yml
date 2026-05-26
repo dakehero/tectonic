@@ -258,9 +258,8 @@ jobs:
             target: x86_64-unknown-linux-gnu
           - image: windows-latest
             target: x86_64-pc-windows-msvc
-          - image: windows-latest
+          - image: windows-11-arm
             target: aarch64-pc-windows-msvc
-            run-tests: false
           - image: macos-latest
             target: x86_64-apple-darwin
           - image: macos-latest
@@ -292,7 +291,11 @@ jobs:
           else
             echo "VCPKGRS_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
           fi
-          echo "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+          if [[ "${{ runner.arch }}" == "ARM64" ]]; then
+            echo "VCPKG_DEFAULT_HOST_TRIPLET=arm64-windows-static-release" >> "$GITHUB_ENV"
+          else
+            echo "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+          fi
           # Format file locking issue workaround:
           echo "RUST_TEST_THREADS=1" >> "$GITHUB_ENV"
       - name: "Install vcpkg dependencies"
